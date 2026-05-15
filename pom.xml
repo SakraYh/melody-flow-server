@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>cn.edu.seig</groupId>
-    <artifactId>vibe-music-server</artifactId>
+    <artifactId>melody-flow-server</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>vibe-music-server</name>
-    <description>vibe-music-server</description>
+    <name>melody-flow-server</name>
+    <description>MelodyFlow - 在线音乐流媒体平台服务端</description>
     <url/>
     <licenses>
         <license/>
@@ -119,6 +119,13 @@
             <groupId>io.minio</groupId>
             <artifactId>minio</artifactId>
             <version>8.5.9</version>
+        </dependency>
+
+        <!--Knife4j 接口文档依赖-->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+            <version>4.5.0</version>
         </dependency>
 
     </dependencies>

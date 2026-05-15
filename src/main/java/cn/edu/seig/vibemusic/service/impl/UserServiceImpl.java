@@ -139,7 +139,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             return Result.error(MessageConstant.ACCOUNT_LOCKED);
         }
 
-        if (DigestUtils.md5DigestAsHex(userLoginDTO.getPassword().getBytes()).equals(user.getPassword())) {
+        if (user.getPassword().equals(DigestUtils.md5DigestAsHex(userLoginDTO.getPassword().getBytes()))) {
             // 登录成功
             Map<String, Object> claims = new HashMap<>();
             claims.put(JwtClaimsConstant.ROLE, RoleEnum.USER.getRole());

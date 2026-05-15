@@ -1,203 +1,217 @@
-# Vibe Music Server 🎶
+# MelodyFlow Server
 
-## 介绍 📖
+基于 Spring Boot 3 构建的在线音乐流媒体平台后端服务，为 MelodyFlow 客户端和管理端提供 RESTful API 支持。
 
-**Vibe Music Server** 是 Vibe Music 项目的后端 API 服务。本项目基于 **Spring Boot 3** 构建，采用 **Java 17**、**Maven**、**MyBatis-Plus**、**MySQL**、**Redis** 和 **MinIO** 等技术，为 Vibe Music 的客户端和管理端提供稳定、高效的数据支持和业务逻辑处理。
+## 技术栈
 
-## 主要功能 ✨
+| 类别 | 技术 |
+|------|------|
+| 后端框架 | Spring Boot 3.3.7 |
+| 开发语言 | Java 17 |
+| 构建工具 | Maven |
+| ORM | MyBatis-Plus 3.5.9 |
+| 数据库 | MySQL 8.0 |
+| 缓存 | Redis |
+| 对象存储 | MinIO |
+| 认证鉴权 | JWT (java-jwt 4.4.0) + RBAC |
+| 连接池 | Druid 1.2.18 |
 
-本服务提供以下核心功能 API：
+## 核心功能
 
-- **用户认证与管理**: 提供用户注册、登录、信息修改、头像上传、注销等接口，支持管理员对用户进行管理（查询、禁用/启用）。
-- **内容管理**:
-    - **歌手管理**: 添加、编辑、删除歌手信息。
-    - **歌曲管理**: 添加、编辑、删除歌曲信息，处理歌曲文件上传。
-    - **歌单管理**: 创建、编辑、删除歌单，管理歌单歌曲。
-    - **轮播图管理**: 添加、编辑、删除首页轮播图。
-- **用户互动**:
-    - **评论管理**: 发表、查看、删除歌曲或歌单的评论。
-    - **收藏管理**: 用户收藏/取消收藏歌曲、歌单。
-    - **反馈管理**: 提交、查看、处理用户反馈。
-- **文件服务**: 使用 MinIO 存储和管理音乐文件、图片（如头像、封面）等静态资源。
-- **权限控制**: 基于 JWT 和角色进行 API 访问权限控制。
-- **数据缓存**: 利用 Redis 缓存热点数据，提高访问速度。
-- **邮件服务**: 支持发送验证码等邮件通知。
+### 用户模块
+- 邮箱验证码注册 / 登录 / 登出
+- JWT 令牌认证 + Redis 令牌管理
+- 个人信息编辑、头像上传、密码修改/重置
+- 管理员对用户的 CRUD、状态启用/禁用、批量删除
 
-## 技术栈 🛠️
+### 内容管理
+- **歌手管理**：歌手信息 CRUD、头像上传、作品聚合查询
+- **歌曲管理**：歌曲 CRUD、音频/封面上传、分类检索、歌词存储
+- **歌单管理**：歌单 CRUD、歌单-歌曲多对多绑定、精选推荐
+- **Banner 管理**：首页轮播图 CRUD、启用/禁用控制
 
-- **后端框架**: [Spring Boot 3](https://spring.io/projects/spring-boot)
-- **开发语言**: [Java 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
-- **构建工具**: [Maven](https://maven.apache.org/)
-- **数据库**: [MySQL](https://www.mysql.com/) (推荐 8.0+)
-- **ORM**: [MyBatis-Plus](https://baomidou.com/)
-- **缓存**: [Redis](https://redis.io/)
-- **对象存储**: [MinIO](https://min.io/)
-- **认证**: [JWT (java-jwt)](https://github.com/auth0/java-jwt)
-- **数据库连接池**: [Druid](https://github.com/alibaba/druid)
-- **工具库**: Lombok, Spring Boot Validation, Java Mail
+### 社交互动
+- 歌曲与歌单的评论发表/查看/删除
+- 用户收藏（歌曲/歌单）及取消收藏
+- 用户反馈提交与管理员处理
 
-## 系统需求 ⚙️
+### 全文搜索
+- MySQL FULLTEXT INDEX 倒排索引
+- 跨表联合搜索（歌曲/歌手/歌单）
+- BOOLEAN MODE 多关键词 AND 匹配
+- Redis 搜索结果缓存
 
-- **JDK**: `17` 或更高版本
-- **Maven**: `3.6` 或更高版本
-- **MySQL**: `8.0` 或更高版本
-- **Redis**: 推荐 `6.0` 或更高版本
-- **MinIO**: 最新稳定版
+### 文件服务
+- MinIO 对象存储管理音频、封面、头像等静态资源
+- 支持文件上传、删除、预签名访问
 
-## 代码仓库 ⭐
+### 系统架构
+- RBAC 角色权限控制（Admin / User），接口级别拦截
+- 全局异常统一处理
+- CORS 跨域配置
+- 声明式缓存（`@Cacheable` / `@CacheEvict`）
 
-- [GitHub 代码仓库](https://github.com/Alex-LiSun/vibe-music-server.git)
+## 数据库设计
 
-## 文件下载 📥
+12 张数据表：
 
-本项目包含的所有文件，均已通过MinIO存储桶的形式进行分享，并提供百度网盘的下载链接。
-- vibe-music-data: [https://pan.baidu.com/s/1IHU2EBodNmmjCeYi7_Tw5g?pwd=1234] (提取码: `1234`)
+| 表名 | 说明 |
+|------|------|
+| tb_admin | 管理员账户 |
+| tb_user | 用户账户 |
+| tb_artist | 歌手信息 |
+| tb_song | 歌曲信息（含 FULLTEXT INDEX） |
+| tb_playlist | 歌单信息（含 FULLTEXT INDEX） |
+| tb_playlist_binding | 歌单-歌曲绑定关系 |
+| tb_genre | 歌曲-风格关联 |
+| tb_style | 音乐风格字典 |
+| tb_comment | 评论数据 |
+| tb_user_favorite | 用户收藏关系 |
+| tb_banner | 首页轮播图 |
+| tb_feedback | 用户反馈 |
 
-![vibe-music-data](https://github.com/Alex-LiSun/vibe-music-server/blob/main/img/vibe-music-data.png)
-![vibe-music-data](https://github.com/Alex-LiSun/vibe-music-server/blob/main/img/vibe-music-data-songs.png)
+## 环境要求
 
-## 安装与启动 🚀
+- JDK 17+
+- Maven 3.6+
+- MySQL 8.0+
+- Redis 6.0+
+- MinIO（最新稳定版）
 
-1.  **克隆项目**
+## 快速开始
 
-    ```bash
-    # GitHub (示例)
-    git clone https://github.com/Alex-LiSun/vibe-music-server.git
+### 1. 环境准备
 
-    cd vibe-music-server
-    ```
+确保已安装并启动 MySQL、Redis、MinIO 服务。
 
-2.  **环境准备**
+在 MySQL 中创建数据库：
 
-    - 确保已安装并运行 **MySQL 8.0+** 数据库服务。
-    - 创建名为 `vibe_music` 的数据库 (或与配置文件中名称一致)，并使用 `UTF-8` 字符集。
-        ```sql
-        CREATE DATABASE vibe_music CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-        ```
-    - 确保已安装并运行 **Redis** 服务。
-    - 确保已安装并运行 **MinIO** 服务。
-    - 在 MinIO 中创建一个名为 `vibe-music-data` 的 Bucket (或与配置文件中名称一致)，并确保服务具有读写权限。
+```sql
+CREATE DATABASE melody_flow CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-3.  **配置应用**
+在 MinIO 中创建 Bucket（名称与配置文件一致，默认为 `melody-flow-data`）。
 
-    - 找到并修改 `src/main/resources/application.yml` 文件。
-    - **数据库配置**: 修改 `spring.datasource` 下的 `url`, `username`, `password` 以匹配你的 MySQL 环境。
-    - **Redis 配置**: 修改 `spring.data.redis` 下的 `host`, `port`, `password` (如果需要) 以匹配你的 Redis 环境。
-    - **MinIO 配置**: 修改 `minio` 下的 `endpoint`, `accessKey`, `secretKey`, `bucket` 以匹配你的 MinIO 环境。
-    - **邮件服务配置 (可选)**: 如果需要邮件功能（如验证码），修改 `spring.mail` 下的 `host`, `username`, `password`。 **注意：请勿将生产环境的敏感密码直接提交到代码库。** 建议使用环境变量或配置中心管理。
+### 2. 配置
 
-    ```yaml
-    # src/main/resources/application.yml (部分示例)
+编辑 `src/main/resources/application.yml`：
 
-    spring:
-      datasource:
-        url: jdbc:mysql://YOUR_MYSQL_HOST:3306/vibe_music?useUnicode=true&characterEncoding=utf-8&useSSL=false # 修改你的 MySQL 地址和库名
-        username: YOUR_MYSQL_USER # 修改你的 MySQL 用户名
-        password: YOUR_MYSQL_PASSWORD # 修改你的 MySQL 密码
-        # ...
+```yaml
+spring:
+  datasource:
+    url: jdbc:mysql://YOUR_HOST:3306/melody_flow?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: YOUR_USERNAME
+    password: YOUR_PASSWORD
 
-      data:
-        redis:
-          host: YOUR_REDIS_HOST # 修改你的 Redis 地址
-          port: 6379
-          password: YOUR_REDIS_PASSWORD # 如果 Redis 有密码，取消注释并修改
-          database: 1
-          # ...
+  data:
+    redis:
+      host: YOUR_REDIS_HOST
+      port: 6379
+      password: YOUR_REDIS_PASSWORD  # 如无密码则留空
 
-      mail:
-        host: smtp.example.com # 修改你的 SMTP 服务器地址
-        username: your-email@example.com # 修改你的邮箱账号
-        password: YOUR_EMAIL_APP_PASSWORD # 修改你的邮箱应用密码或授权码
-        # ...
+  mail:
+    host: smtp.example.com
+    username: your-email@example.com
+    password: YOUR_APP_PASSWORD
 
-    minio:
-      endpoint: http://YOUR_MINIO_HOST:9000 # 修改你的 MinIO 端点
-      accessKey: YOUR_MINIO_ACCESS_KEY # 修改你的 MinIO Access Key
-      secretKey: YOUR_MINIO_SECRET_KEY # 修改你的 MinIO Secret Key
-      bucket: vibe-music-data # 确认 Bucket 名称与你创建的一致
-    ```
+minio:
+  endpoint: http://YOUR_MINIO_HOST:9000
+  accessKey: YOUR_ACCESS_KEY
+  secretKey: YOUR_SECRET_KEY
+  bucket: melody-flow-data
+```
 
-4.  **构建项目** (使用 Maven)
+### 3. 运行数据库迁移
 
-    在项目根目录下执行：
-    ```bash
-    mvn clean package -DskipTests
-    ```
-    这将在 `target` 目录下生成一个可执行的 JAR 文件 (例如 `vibe-music-server-0.0.1-SNAPSHOT.jar`)。
+执行 SQL 迁移脚本创建全文索引：
 
-5.  **运行服务**
+```sql
+-- 见 sql/migration_fulltext_search.sql
+ALTER TABLE tb_song ADD FULLTEXT INDEX ft_song_name_album (name, album);
+ALTER TABLE tb_artist ADD FULLTEXT INDEX ft_artist_name (name);
+ALTER TABLE tb_playlist ADD FULLTEXT INDEX ft_playlist_title (title);
+```
 
-    ```bash
-    java -jar target/vibe-music-server-*.jar
-    ```
-    服务默认启动在 `8080` 端口 (Spring Boot 默认端口，可在 `application.yml` 中通过 `server.port` 修改)。
+### 4. 构建与启动
 
-## 项目脚本 📜 (Maven)
+```bash
+# 构建
+mvn clean package -DskipTests
 
-- `mvn clean`: 清理构建产物。
-- `mvn compile`: 编译项目源代码。
-- `mvn test`: 运行单元测试。
-- `mvn package`: 打包项目为可执行 JAR 文件。
-- `mvn spring-boot:run`: 启动 Spring Boot 应用 (用于开发)。
-- `java -jar target/*.jar`: 运行打包后的 JAR 文件。
+# 启动
+java -jar target/melody-flow-server-*.jar
+```
 
-## 项目演示 📺
+服务默认启动在 `8080` 端口。
 
-视频地址：[https://www.bilibili.com/video/BV1tKJ8z8E6z/]
+## 项目结构
 
-## API 文档 接口
+```
+src/main/java/cn/edu/seig/vibemusic/
+├── config/          # 配置类（CORS、Redis、MinIO、Web、RBAC）
+├── constant/        # 常量定义
+├── controller/      # REST 控制器（14个）
+├── enumeration/     # 枚举类
+├── handler/         # 全局异常处理
+├── interceptor/     # 拦截器（登录鉴权）
+├── mapper/          # MyBatis Mapper 接口
+├── model/
+│   ├── dto/         # 数据传输对象
+│   ├── entity/      # 数据库实体
+│   └── vo/          # 视图对象
+├── result/          # 统一响应模型
+├── service/         # 业务逻辑接口与实现
+└── util/            # 工具类
+```
 
-本项目旨在为 [Vibe Music Client](https://github.com/Alex-LiSun/vibe-music-client) (客户端) 和 [Vibe Music Admin](https://github.com/Alex-LiSun/vibe-music-admin) (管理端) 提供后端支持。具体的 API 接口定义和使用方式，请参考项目源代码中的 Controller 层代码，或使用 API 文档工具 (如 Swagger，如果项目中集成了的话) 查看。
+## Maven 脚本
 
-## 依赖服务说明 🔗
+| 命令 | 说明 |
+|------|------|
+| `mvn clean` | 清理构建产物 |
+| `mvn compile` | 编译源代码 |
+| `mvn test` | 运行单元测试 |
+| `mvn package -DskipTests` | 跳过测试打包 |
+| `mvn spring-boot:run` | 开发模式启动 |
 
-本项目运行依赖以下外部服务，请确保它们已正确安装、配置并正在运行：
+## API 接口
 
-- **MySQL**: 用于持久化存储核心业务数据。
-- **Redis**: 用于数据缓存，提升性能。
-- **MinIO**: 用于存储音乐文件、图片等静态资源。
+接口定义位于 `controller/` 目录下，按模块划分：
 
-## 免责声明 ⚠️
+- `/user/**` — 用户认证与信息管理
+- `/admin/**` — 管理员操作
+- `/song/**` — 歌曲管理
+- `/artist/**` — 歌手管理
+- `/playlist/**` — 歌单管理
+- `/comment/**` — 评论管理
+- `/favorite/**` — 收藏管理
+- `/banner/**` — 轮播图管理
+- `/feedback/**` — 反馈管理
+- `/search` — 全文搜索
 
-**Vibe Music Server** 项目仅供学习和技术研究使用。所有由本服务管理和存储的数据（包括用户信息、音乐文件、图片等）均由您自行配置和运行的 **MySQL**, **Redis**, **MinIO** 服务承载。请在遵守相关国家和地区的法律法规以及版权政策的前提下使用。
+## 常见问题
 
-- **请勿用于任何商业用途。**
-- 对于因使用本项目而可能产生的任何直接或间接问题、数据安全风险、版权纠纷或经济损失，项目作者不承担任何责任。
-- 用户需自行承担所有使用风险，包括确保数据来源合法合规，以及所依赖服务的安全稳定运行。
+**数据库连接失败？**
+- 检查 `application.yml` 中数据库 URL、用户名、密码是否正确
+- 确认 MySQL 服务已启动且网络可达
+- 确认数据库 `melody_flow` 已创建
 
-在您部署和使用本软件前，请仔细阅读并理解本免责声明。继续使用即表示您同意本声明的所有条款。
+**Redis 连接失败？**
+- 检查 Redis 配置的 host、port、password
+- 确认 Redis 服务已启动
 
-## 许可证 📄
+**文件上传失败？**
+- 检查 MinIO 配置的 endpoint、accessKey、secretKey、bucket
+- 确认 MinIO 服务已启动且 Bucket 已创建
+- 检查 `spring.servlet.multipart` 中的文件大小限制
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+**端口冲突？**
+- 在 `application.yml` 中添加 `server.port` 修改默认端口
 
-## 贡献 ❤️
+## 许可证
 
-欢迎各种形式的贡献，包括提交 Issue、Pull Request 或提出建议！
+MIT License
 
-## 常见问题 (FAQ) ❓
+## 免责声明
 
-- **启动失败，提示数据库连接错误？**
-    - 检查 `application.yml` 中的 `spring.datasource` 配置是否正确 (URL、用户名、密码)。
-    - 确认 MySQL 服务是否正在运行，并且网络可达。
-    - 确认数据库 `vibe_music` 是否已创建，并且字符集正确。
-    - 检查 MySQL 用户是否有权限访问该数据库。
-
-- **启动失败，提示 Redis 连接错误？**
-    - 检查 `application.yml` 中的 `spring.data.redis` 配置是否正确 (host, port, password)。
-    - 确认 Redis 服务是否正在运行，并且网络可达。
-
-- **文件上传失败或无法访问？**
-    - 检查 `application.yml` 中的 `minio` 配置是否正确 (endpoint, accessKey, secretKey, bucket)。
-    - 确认 MinIO 服务是否正在运行，并且网络可达。
-    - 确认 MinIO 中名为 `vibe-music-data` (或你配置的名称) 的 Bucket 是否已创建。
-    - 检查 MinIO 的 Bucket 策略或服务权限设置，确保应用有读写权限。
-    - 检查 `spring.servlet.multipart` 的 `max-file-size` 和 `max-request-size` 是否足够大。
-
-- **端口冲突 (Port already in use)？**
-    - 检查是否有其他程序占用了 `8080` 端口 (或其他你在 `application.yml` 中配置的 `server.port`)。
-    - 你可以修改 `application.yml` 中的 `server.port` 来使用其他端口。
-
-- **如何查看 API 接口？**
-    - 如果项目集成了 Swagger 或 SpringDoc，启动服务后通常可以通过访问 `/swagger-ui.html` 或 `/v3/api-docs` 来查看和测试 API。
-    - 如果没有集成文档工具，需要直接查看 `src/main/java/.../controller` 目录下的 Java 代码来了解接口定义。
+本项目仅供学习和技术研究使用，请勿用于商业用途。使用本项目所产生的任何数据安全风险、版权纠纷或经济损失，项目作者不承担任何责任。

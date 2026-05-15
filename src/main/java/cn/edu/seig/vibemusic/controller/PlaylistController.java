@@ -7,6 +7,9 @@ import cn.edu.seig.vibemusic.model.vo.PlaylistVO;
 import cn.edu.seig.vibemusic.result.PageResult;
 import cn.edu.seig.vibemusic.result.Result;
 import cn.edu.seig.vibemusic.service.IPlaylistService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author sunpingli
- * @since 2025-01-09
- */
+@Tag(name = "歌单管理", description = "歌单查询、推荐、详情接口")
 @RestController
 @RequestMapping("/playlist")
 public class PlaylistController {
@@ -29,36 +25,23 @@ public class PlaylistController {
     @Autowired
     private IPlaylistService playlistService;
 
-    /**
-     * 获取所有歌单
-     *
-     * @param playlistDTO playlistDTO
-     * @return 歌单列表
-     */
+    @Operation(summary = "获取歌单列表（分页）", description = "支持按标题、风格筛选")
     @PostMapping("/getAllPlaylists")
     public Result<PageResult<PlaylistVO>> getAllPlaylists(@RequestBody @Valid PlaylistDTO playlistDTO) {
         return playlistService.getAllPlaylists(playlistDTO);
     }
 
-    /**
-     * 获取推荐歌单
-     *
-     * @param request request
-     * @return 推荐歌单列表
-     */
+    @Operation(summary = "获取推荐歌单")
     @GetMapping("/getRecommendedPlaylists")
     public Result<List<PlaylistVO>> getRandomPlaylists(HttpServletRequest request) {
         return playlistService.getRecommendedPlaylists(request);
     }
 
-    /**
-     * 获取歌单详情
-     *
-     * @param playlistId 歌单id
-     * @return 歌单详情
-     */
+    @Operation(summary = "获取歌单详情", description = "包含歌单内歌曲列表和评论")
     @GetMapping("/getPlaylistDetail/{id}")
-    public Result<PlaylistDetailVO> getPlaylistDetail(@PathVariable("id") Long playlistId, HttpServletRequest request) {
+    public Result<PlaylistDetailVO> getPlaylistDetail(
+            @Parameter(description = "歌单ID") @PathVariable("id") Long playlistId,
+            HttpServletRequest request) {
         return playlistService.getPlaylistDetail(playlistId, request);
     }
 

@@ -7,6 +7,9 @@ import cn.edu.seig.vibemusic.model.vo.ArtistVO;
 import cn.edu.seig.vibemusic.result.PageResult;
 import cn.edu.seig.vibemusic.result.Result;
 import cn.edu.seig.vibemusic.service.IArtistService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**
- * <p>
- * 前端控制器
- * </p>
- *
- * @author sunpingli
- * @since 2025-01-09
- */
+@Tag(name = "歌手管理", description = "歌手查询、详情接口")
 @RestController
 @RequestMapping("/artist")
 public class ArtistController {
@@ -29,36 +25,23 @@ public class ArtistController {
     @Autowired
     private IArtistService artistService;
 
-    /**
-     * 获取所有歌手列表
-     *
-     * @param artistDTO artistDTO
-     * @return 歌手列表
-     */
+    @Operation(summary = "获取歌手列表（分页）", description = "支持按姓名、性别、地区筛选")
     @PostMapping("/getAllArtists")
     public Result<PageResult<ArtistVO>> getAllArtists(@RequestBody @Valid ArtistDTO artistDTO) {
         return artistService.getAllArtists(artistDTO);
     }
 
-    /**
-     * 获取随机歌手
-     * 随机歌手的数量为 10
-     *
-     * @return 随机歌手列表
-     */
+    @Operation(summary = "获取随机歌手", description = "随机返回 10 位歌手")
     @GetMapping("/getRandomArtists")
     public Result<List<ArtistVO>> getRandomArtists() {
         return artistService.getRandomArtists();
     }
 
-    /**
-     * 获取歌手详情
-     *
-     * @param artistId 歌手id
-     * @return 歌手详情
-     */
+    @Operation(summary = "获取歌手详情", description = "包含歌手作品列表")
     @GetMapping("/getArtistDetail/{id}")
-    public Result<ArtistDetailVO> getArtistDetail(@PathVariable("id") Long artistId, HttpServletRequest request) {
+    public Result<ArtistDetailVO> getArtistDetail(
+            @Parameter(description = "歌手ID") @PathVariable("id") Long artistId,
+            HttpServletRequest request) {
         return artistService.getArtistDetail(artistId, request);
     }
 

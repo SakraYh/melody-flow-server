@@ -60,7 +60,8 @@ public class LoginInterceptor implements HandlerInterceptor {
                 PathConstant.PLAYLIST_DETAIL_PATH,
                 PathConstant.ARTIST_DETAIL_PATH,
                 PathConstant.SONG_LIST_PATH,
-                PathConstant.SONG_DETAIL_PATH
+                PathConstant.SONG_DETAIL_PATH,
+                PathConstant.SEARCH_PATH
         );
 
         // 检查路径是否匹配

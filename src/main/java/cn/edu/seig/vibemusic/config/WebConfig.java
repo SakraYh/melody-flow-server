@@ -14,9 +14,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 登录接口和注册接口不拦截
+        // 登录拦截器
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/**") // 拦截所有请求
+                .addPathPatterns("/**")
                 .excludePathPatterns(
                         "/admin/login", "/admin/logout", "/admin/register",
                         "/user/login", "/user/logout", "/user/register",
@@ -24,6 +24,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/banner/getBannerList",
                         "/playlist/getAllPlaylists", "/playlist/getRecommendedPlaylists", "/playlist/getPlaylistDetail/**",
                         "/artist/getAllArtists", "/artist/getArtistDetail/**",
-                        "/song/getAllSongs", "/song/getRecommendedSongs", "/song/getSongDetail/**");
+                        "/song/getAllSongs", "/song/getRecommendedSongs", "/song/getSongDetail/**",
+                        "/search");
     }
 }

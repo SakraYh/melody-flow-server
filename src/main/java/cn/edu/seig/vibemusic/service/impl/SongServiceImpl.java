@@ -70,17 +70,12 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
 
     /**
      * 获取所有歌曲
-     *
-     * @param songDTO songDTO
-     * @return 歌曲列表
      */
     @Override
-    @Cacheable(key = "#songDTO.pageNum + '-' + #songDTO.pageSize + '-' + #songDTO.songName + '-' + #songDTO.artistName + '-' + #songDTO.album")
     public Result<PageResult<SongVO>> getAllSongs(SongDTO songDTO, HttpServletRequest request) {
-        // 获取请求头中的 token
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // 去掉 "Bearer " 前缀
+            token = token.substring(7);
         }
 
         Map<String, Object> map = null;
@@ -88,36 +83,27 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
             map = JwtUtil.parseToken(token);
         }
 
-        // 查询歌曲列表
         Page<SongVO> page = new Page<>(songDTO.getPageNum(), songDTO.getPageSize());
-        IPage<SongVO> songPage = songMapper.getSongsWithArtist(page, songDTO.getSongName(), songDTO.getArtistName(), songDTO.getAlbum());
+        IPage<SongVO> songPage = songMapper.getSongsWithArtist(page,
+                songDTO.getSongName(), songDTO.getArtistName(), songDTO.getAlbum());
         if (songPage.getRecords().isEmpty()) {
             return Result.success(MessageConstant.DATA_NOT_FOUND, new PageResult<>(0L, null));
         }
+        List<SongVO> songVOList = songPage.getRecords();
+        long total = songPage.getTotal();
 
-        // 设置默认状态
-        List<SongVO> songVOList = songPage.getRecords().stream()
+        songVOList = songVOList.stream()
                 .peek(songVO -> songVO.setLikeStatus(LikeStatusEnum.DEFAULT.getId()))
                 .toList();
 
-        // 如果 token 解析成功且用户为登录状态，进一步操作
         if (map != null) {
             String role = (String) map.get(JwtClaimsConstant.ROLE);
             if (role.equals(RoleEnum.USER.getRole())) {
-                Object userIdObj = map.get(JwtClaimsConstant.USER_ID);
-                Long userId = TypeConversionUtil.toLong(userIdObj);
-
-                // 获取用户收藏的歌曲
+                Long userId = TypeConversionUtil.toLong(map.get(JwtClaimsConstant.USER_ID));
                 List<UserFavorite> favoriteSongs = userFavoriteMapper.selectList(new QueryWrapper<UserFavorite>()
-                        .eq("user_id", userId)
-                        .eq("type", 0));
-
-                // 获取用户收藏的歌曲 id
+                        .eq("user_id", userId).eq("type", 0));
                 Set<Long> favoriteSongIds = favoriteSongs.stream()
-                        .map(UserFavorite::getSongId)
-                        .collect(Collectors.toSet());
-
-                // 检查并更新状态
+                        .map(UserFavorite::getSongId).collect(Collectors.toSet());
                 for (SongVO songVO : songVOList) {
                     if (favoriteSongIds.contains(songVO.getSongId())) {
                         songVO.setLikeStatus(LikeStatusEnum.LIKE.getId());
@@ -126,7 +112,7 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
             }
         }
 
-        return Result.success(new PageResult<>(songPage.getTotal(), songVOList));
+        return Result.success(new PageResult<>(total, songVOList));
     }
 
     /**
@@ -470,7 +456,7 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
     @Override
     @CacheEvict(cacheNames = "songCache", allEntries = true)
     public Result deleteSongs(List<Long> songIds) {
-        // 1. 查询歌曲信息，获取歌曲封面 URL 列表
+        // ... existing implementation
         List<Song> songs = songMapper.selectByIds(songIds);
         List<String> coverUrlList = songs.stream()
                 .map(Song::getCoverUrl)
@@ -481,7 +467,6 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
                 .filter(audioUrl -> audioUrl != null && !audioUrl.isEmpty())
                 .toList();
 
-        // 2. 先删除 MinIO 里的歌曲封面和音频文件
         for (String coverUrl : coverUrlList) {
             minioService.deleteFile(coverUrl);
         }
@@ -489,7 +474,6 @@ public class SongServiceImpl extends ServiceImpl<SongMapper, Song> implements IS
             minioService.deleteFile(audioUrl);
         }
 
-        // 3. 删除数据库中的歌曲信息
         if (songMapper.deleteByIds(songIds) == 0) {
             return Result.error(MessageConstant.DELETE + MessageConstant.FAILED);
         }

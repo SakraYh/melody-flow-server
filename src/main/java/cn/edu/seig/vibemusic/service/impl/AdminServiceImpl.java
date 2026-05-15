@@ -72,7 +72,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
             return Result.error(MessageConstant.USERNAME + MessageConstant.ERROR);
         }
 
-        if (DigestUtils.md5DigestAsHex(adminDTO.getPassword().getBytes()).equals(admin.getPassword())) {
+        if (admin.getPassword().equals(DigestUtils.md5DigestAsHex(adminDTO.getPassword().getBytes()))) {
             // 登录成功
             Map<String, Object> claims = new HashMap<>();
             claims.put(JwtClaimsConstant.ROLE, RoleEnum.ADMIN.getRole());
