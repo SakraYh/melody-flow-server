@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="cn.edu.seig.vibemusic.mapper.SearchMapper">
+<mapper namespace="cn.edu.seig.melodyflow.mapper.SearchMapper">
 
     <!-- 全文搜索歌曲：MATCH 搜歌名+专辑 -->
-    <select id="fulltextSearchSongs" resultType="cn.edu.seig.vibemusic.model.vo.SearchResultItemVO">
+    <select id="fulltextSearchSongs" resultType="cn.edu.seig.melodyflow.model.vo.SearchResultItemVO">
         SELECT 'song'            AS type,
                s.id              AS id,
                s.name            AS title,
@@ -17,7 +17,7 @@
     </select>
 
     <!-- 全文搜索歌手 -->
-    <select id="fulltextSearchArtists" resultType="cn.edu.seig.vibemusic.model.vo.SearchResultItemVO">
+    <select id="fulltextSearchArtists" resultType="cn.edu.seig.melodyflow.model.vo.SearchResultItemVO">
         SELECT 'artist'          AS type,
                id                AS id,
                name              AS title,
@@ -30,7 +30,7 @@
     </select>
 
     <!-- 全文搜索歌单 -->
-    <select id="fulltextSearchPlaylists" resultType="cn.edu.seig.vibemusic.model.vo.SearchResultItemVO">
+    <select id="fulltextSearchPlaylists" resultType="cn.edu.seig.melodyflow.model.vo.SearchResultItemVO">
         SELECT 'playlist'        AS type,
                id                AS id,
                title             AS title,
